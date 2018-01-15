@@ -1,6 +1,6 @@
 open Types
 
-       
+
 type tag = int
 let tag (p : 'a program) : tag program =
   let next = ref 0 in
@@ -32,6 +32,9 @@ let tag (p : 'a program) : tag program =
     | EIf(cond, thn, els, _) ->
        let if_tag = tag() in
        EIf(helpE cond, helpE thn, helpE els, if_tag)
+    | EWhile(cond, body, _) ->
+       let while_tag = tag() in
+       EWhile(helpE cond, helpE body, while_tag)
     | ETuple(vals, _) ->
        let tuple_tag = tag() in
        ETuple(List.map helpE vals, tuple_tag)
@@ -79,6 +82,8 @@ let rec untag : 'a. 'a program -> unit program = fun p ->
       ELetRec(List.map(fun (x, topt, b, _) -> (x, topt, helpE b, ())) binds, helpE body, ())
     | EIf(cond, thn, els, _) ->
       EIf(helpE cond, helpE thn, helpE els, ())
+    | EWhile(cond, body, _) ->
+      EWhile(helpE cond, helpE body, ())
     | ETuple(vals, _) ->
       ETuple(List.map helpE vals, ())
     | EString(s, _) ->
@@ -126,6 +131,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CIf(cond, thn, els, _) ->
        let if_tag = tag() in
        CIf(helpI cond, helpA thn, helpA els, if_tag)
+    | CWhile(cond, body, _) ->
+       let while_tag = tag() in
+       CWhile(helpA cond, helpA body, while_tag)
     | CTuple(vals, _) ->
        let tuple_tag = tag() in
        CTuple(List.map helpI vals, tuple_tag)
@@ -171,6 +179,8 @@ let auntag (p : 'a aprogram) : unit aprogram =
        CPrim2(op, helpI e1, helpI e2, ())
     | CIf(cond, thn, els, _) ->
        CIf(helpI cond, helpA thn, helpA els, ())
+    | CWhile(cond, body, _) ->
+       CWhile(helpA cond, helpA body, ())
     | CTuple(vals, _) ->
        CTuple(List.map helpI vals, ())
     | CString(s, _) ->

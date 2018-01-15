@@ -3,7 +3,7 @@ type ('a, 'b) either =
   | Left of 'a
   | Right of 'b
 
-               
+
 type sourcespan = (Lexing.position * Lexing.position)
 type initial_func = (string * sourcespan * bool) (* name, loc, is_pure *)
 exception UnboundId of string * sourcespan (* name, where used *)
@@ -58,6 +58,7 @@ and 'a expr =
   | EPrim1 of prim1 * 'a expr * 'a
   | EPrim2 of prim2 * 'a expr * 'a expr * 'a
   | EIf of 'a expr * 'a expr * 'a expr * 'a
+  | EWhile of 'a expr * 'a expr * 'a
   | ETuple of 'a expr list * 'a
   | EString of string * 'a
   | EGetItem of 'a expr * 'a expr * 'a
@@ -81,6 +82,7 @@ type 'a immexpr = (* immediate expressions *)
   | ImmId of string * 'a
 and 'a cexpr = (* compound expressions *)
   | CIf of 'a immexpr * 'a aexpr * 'a aexpr * 'a
+  | CWhile of 'a aexpr * 'a aexpr * 'a
   | CPrim1 of prim1 * 'a immexpr * 'a
   | CPrim2 of prim2 * 'a immexpr * 'a immexpr * 'a
   | CApp of 'a immexpr * 'a immexpr list * 'a
@@ -88,7 +90,7 @@ and 'a cexpr = (* compound expressions *)
   | CString of string * 'a
   | CGetItem of 'a immexpr * 'a immexpr * 'a
   | CSetItem of 'a immexpr * 'a immexpr * 'a immexpr * 'a
-  | CLambda of string list * 'a aexpr * 'a                                            
+  | CLambda of string list * 'a aexpr * 'a
   | CImmExpr of 'a immexpr (* for when you just need an immediate value *)
 and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a

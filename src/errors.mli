@@ -5,6 +5,7 @@ type grain_error =
   | ArithmeticError
   | LogicError
   | IfError
+  | WhileError
   | OverflowError
   | ArityMismatch
   | CalledNonFunction
@@ -24,6 +25,7 @@ val err_COMP_NOT_NUM              : int
 val err_ARITH_NOT_NUM             : int
 val err_LOGIC_NOT_BOOL            : int
 val err_IF_NOT_BOOL               : int
+val err_WHILE_NOT_BOOL               : int
 val err_OVERFLOW                  : int
 val err_GET_NOT_TUP               : int
 val err_GET_ITEM_INDEX_NOT_NUMBER : int

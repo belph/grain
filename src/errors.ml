@@ -5,6 +5,7 @@ type grain_error =
   | ArithmeticError
   | LogicError
   | IfError
+  | WhileError
   | OverflowError
   | ArityMismatch
   | CalledNonFunction
@@ -23,6 +24,7 @@ let all_grain_errors = [
   ArithmeticError;
   LogicError;
   IfError;
+  WhileError;
   OverflowError;
   ArityMismatch;
   CalledNonFunction;
@@ -52,12 +54,14 @@ let err_SET_NOT_TUP               = 12
 let err_SET_ITEM_INDEX_NOT_NUMBER = 13
 let err_SET_ITEM_INDEX_TOO_SMALL  = 14
 let err_SET_ITEM_INDEX_TOO_LARGE  = 15
+let err_WHILE_NOT_BOOL            = 16
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
   | ArithmeticError -> err_ARITH_NOT_NUM
   | ComparisonError -> err_COMP_NOT_NUM
   | IfError -> err_IF_NOT_BOOL
+  | WhileError -> err_WHILE_NOT_BOOL
   | LogicError -> err_LOGIC_NOT_BOOL
   | ArityMismatch -> err_ARITY_MISMATCH
   | CalledNonFunction -> err_CALLED_NON_FUNCTION
@@ -76,6 +80,7 @@ let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
   | ComparisonError -> "error_not_number_comp"
   | IfError -> "error_not_boolean_if"
+  | WhileError -> "error_not_boolean_while"
   | LogicError -> "error_not_boolean_logic"
   | ArityMismatch -> "error_arity_mismatch"
   | CalledNonFunction -> "error_called_non_function"
@@ -95,6 +100,7 @@ let error_of_code c =
   | x when x = err_ARITH_NOT_NUM -> ArithmeticError
   | x when x = err_COMP_NOT_NUM -> ComparisonError
   | x when x = err_IF_NOT_BOOL -> IfError
+  | x when x = err_WHILE_NOT_BOOL -> WhileError
   | x when x = err_LOGIC_NOT_BOOL -> LogicError
   | x when x = err_ARITY_MISMATCH -> ArityMismatch
   | x when x = err_CALLED_NON_FUNCTION -> CalledNonFunction
@@ -109,4 +115,3 @@ let error_of_code c =
   | x when x = err_GENERIC_NUM -> GenericNumberError
   | x when x = err_OVERFLOW -> OverflowError
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
-

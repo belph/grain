@@ -42,6 +42,10 @@ let resolve_scope (p : 'a aprogram) initial_env : 'a aprogram =
       let folded_t = helpA binds t in
       let folded_e = helpA binds e in
       CIf(folded_c, folded_t, folded_e, tag)
+    | CWhile(c, b, tag) ->
+      let folded_c = helpA binds c in
+      let folded_b = helpA binds b in
+      CWhile(folded_c, folded_b, tag)
     | CPrim1(op, arg, t) ->
       let folded_arg = helpI binds arg in
       CPrim1(op, folded_arg, t)

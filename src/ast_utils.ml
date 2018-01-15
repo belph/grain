@@ -26,6 +26,8 @@ let free_vars (e : 'a aexpr) : BindingSet.t =
       helpA (args @ bound) body
     | CIf(cond, thn, els, _) ->
       helpI bound cond @ helpA bound thn @ helpA bound els
+    | CWhile(cond, body, _) ->
+      helpA bound cond @ helpA bound body
     | CPrim1(_, arg, _) -> helpI bound arg
     | CPrim2(_, left, right, _) -> helpI bound left @ helpI bound right
     | CApp(fn, args, _) ->
@@ -55,6 +57,7 @@ let count_vars e =
   and helpC e =
     match e with
     | CIf(_, t, f, _) -> max (helpA t) (helpA f)
+    | CWhile(cond, body, _) -> max (helpA cond) (helpA body)
     | CApp(_, args, _) -> List.length args
     | _ -> 0
   in helpA e

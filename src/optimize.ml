@@ -45,6 +45,9 @@ let purity_env (prog : tag aprogram) (initial_funcs : initial_func list) : (stri
       let t_purity = helpA t in
       let e_purity = helpA e in
       c_purity && t_purity && e_purity
+    | CWhile(cond, body, _) ->
+      let cond_purity = helpA cond in
+      helpA body && cond_purity
     | CPrim1(_,_,_) -> true
     | CPrim2(op, arg1, arg2, _) ->
       true
@@ -113,6 +116,8 @@ let const_fold (prog : 'a aprogram) opts : unit aprogram =
       let folded_t = helpA binds t in
       let folded_e = helpA binds e in
       CIf(folded_c, folded_t, folded_e, ())
+    | CWhile(cond, body, _) ->
+      CWhile(helpA binds cond, helpA binds body, ())
     | CPrim1(op, arg, _) ->
       let folded_arg = helpI binds arg in
       begin
@@ -184,7 +189,7 @@ let const_fold (prog : 'a aprogram) opts : unit aprogram =
         | (Times, ImmId(x, _), ImmNum(0, _)) when (not sound) && (Hashtbl.find purity x) ->
           CImmExpr(ImmNum(0, ()))
         | (And, ImmBool(false as b, _), ImmId(x, _))
-        | (And, ImmId(x, _), ImmBool(false as b, _)) 
+        | (And, ImmId(x, _), ImmBool(false as b, _))
         | (Or, ImmBool(true as b, _), ImmId(x, _))
         | (Or, ImmId(x, _), ImmBool(true as b, _)) when (not sound) && (Hashtbl.find purity x) ->
           CImmExpr(ImmBool(b, ()))
@@ -240,7 +245,7 @@ let cse (prog : tag aprogram) opts : unit aprogram =
   List.map (fun (n, _, _) -> n) initial_funcs;
   let union expr new_bind =
     (* Check if simplified RHS is simple *)
-    
+
     match cexpr_to_simple_opt expr with
     (* If it's not simple, then just add the new
        binding to the CSE dict as itself *)
@@ -294,6 +299,8 @@ let cse (prog : tag aprogram) opts : unit aprogram =
       match cexp with
       | CIf(c, t, e, _) ->
         CIf(helpI c, helpA t, helpA e, ())
+      | CWhile(cond, body, _) ->
+        CWhile(helpA cond, helpA body, ())
       | CPrim1(op, arg, _) ->
         CPrim1(op, helpI arg, ())
       | CPrim2(op, arg1, arg2, _) ->
@@ -353,7 +360,7 @@ let dae (prog : tag aprogram) opts : unit aprogram =
         | ACExpr(CImmExpr(ImmId(id, _))) when id = bind ->
           ACExpr(dae_value)
         | _ ->
-          
+
           let rhs_safe = (not sound) || match dae_value with
             | CImmExpr(ImmId _)
             | CImmExpr(ImmNum _)
@@ -382,6 +389,8 @@ let dae (prog : tag aprogram) opts : unit aprogram =
     match cexp with
     | CIf(c, t, e, _) ->
       CIf(helpI c, helpA t, helpA e, ())
+    | CWhile(cond, body, _) ->
+      CWhile(helpA cond, helpA body, ())
     | CPrim1(op, arg, _) ->
       CPrim1(op, helpI arg, ())
     | CPrim2(op, arg1, arg2, _) ->

@@ -6,10 +6,10 @@ type 'a anf_bind =
   | BSeq of 'a cexpr
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
-  
+
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram = helpA p
-  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
+  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) =
     match e with
     | EPrim1(op, arg, _) ->
        let (arg_imm, arg_setup) = helpI arg in
@@ -21,6 +21,8 @@ let anf (p : tag program) : unit aprogram =
     | EIf(cond, _then, _else, _) ->
        let (cond_imm, cond_setup) = helpI cond in
        (CIf(cond_imm, helpA _then, helpA _else, ()), cond_setup)
+    | EWhile(cond, body, _) ->
+       (CWhile(helpA cond, helpA body, ()), [])
     | ESeq([], _) -> failwith "Impossible by syntax"
     | ESeq([stmt], _) -> helpC stmt
     | ESeq(fst :: rest, tag) ->
@@ -86,6 +88,9 @@ let anf (p : tag program) : unit aprogram =
        let tmp = sprintf "if_%d" tag in
        let (cond_imm, cond_setup) = helpI cond in
        (ImmId(tmp, ()), cond_setup @ [BLet(tmp, CIf(cond_imm, helpA _then, helpA _else, ()))])
+    | EWhile(cond, body, tag) ->
+        let tmp = sprintf "while_%d" tag in
+        (ImmId(tmp, ()), [BLet(tmp, CWhile(helpA cond, helpA body, ()))])
     | EApp(func, args, tag) ->
        let tmp = sprintf "app_%d" tag in
        let (new_func, func_setup) = helpI func in
@@ -143,7 +148,7 @@ let anf (p : tag program) : unit aprogram =
        let (tup_imm, tup_setup) = helpI tup in
        let (rhs_imm, rhs_setup) = helpI rhs in
        (ImmId(tmp, ()), tup_setup @ rhs_setup @ [BLet(tmp, CSetItem(tup_imm, ImmNum(idx, ()), rhs_imm, ()))])
-  and helpA e : unit aexpr = 
+  and helpA e : unit aexpr =
     let (ans, ans_setup) = helpC e in
     List.fold_right
       (fun bind body ->

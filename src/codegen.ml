@@ -608,6 +608,18 @@ and compile_cexpr (e : tag cexpr) env =
             List.map add_dummy_loc (compile_aexpr thn env),
             List.map add_dummy_loc (compile_aexpr els env))]
 
+  | CWhile(cond, body, _) ->
+    [Ast.Block([Types.I32Type],
+               List.map add_dummy_loc [Ast.Loop([Types.I32Type],
+                         List.map add_dummy_loc (
+                         [Ast.Const const_false] @
+                         (compile_aexpr cond env) @
+                         (assert_bool (compile_aexpr cond env) WhileError) @
+                         decode_bool @
+                         [Ast.Test(Values.I32 Ast.IntOp.Eqz); Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] @
+                         [Ast.Drop] @
+                         (compile_aexpr body env) @
+                         [Ast.Br (add_dummy_loc @@ Int32.of_int 0)]))])]
   | CPrim1(Add1, arg, _) ->
     (compile_imm arg env) @
     (* We have to call 'compile_imm' again here because there is no

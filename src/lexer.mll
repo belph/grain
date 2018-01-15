@@ -65,6 +65,8 @@ rule token = parse
   | "begin" { BEGIN }
   | "end" { END }
   | "if" { IF }
+  | "while" { WHILE }
+  | "do" { DO }
   | "true" { TRUE }
   | "false" { FALSE }
   | "isbool" { ISBOOL }

@@ -45,6 +45,10 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
       let new_env = {env with is_tail=false} in
       (wf_E c new_env @ wf_E t new_env @ wf_E f new_env)
       |> check_non_tail loc env
+    | EWhile(c, b, loc) ->
+      let new_env = {env with is_tail=false} in
+      (wf_E c new_env @ wf_E b new_env)
+      |> check_non_tail loc env
     | ETuple(vals, loc) ->
       let new_env = {env with is_tail=false} in
       List.concat (List.map (fun e -> wf_E e new_env) vals)
@@ -90,7 +94,7 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
             let errs_e = wf_E e {env with is_tail=false} in
             let new_env = {env with binds=(x, loc)::env.binds} in
             let (newer_env, errs) = process_binds rest new_env in
-            (newer_env, (shadow @ errs_e @ errs)) in              
+            (newer_env, (shadow @ errs_e @ errs)) in
        let (env2, errs) = process_binds binds env in
        errs @ wf_E body {env2 with is_tail=env.is_tail}
     | ELetRec(binds, body, _) ->
