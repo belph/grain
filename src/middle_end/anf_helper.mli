@@ -19,6 +19,7 @@ module Comp : sig
   val prim1 : ?loc:loc -> ?env:env -> prim1 -> imm_expression -> comp_expression
   val prim2 : ?loc:loc -> ?env:env -> prim2 -> imm_expression -> imm_expression -> comp_expression
   val tuple : ?loc:loc -> ?env:env -> imm_expression list -> comp_expression
+  val construct : ?loc:loc -> ?env:env -> int32 -> int32 -> imm_expression list -> comp_expression
   val tuple_get : ?loc:loc -> ?env:env -> int32 -> imm_expression -> comp_expression
   val tuple_set : ?loc:loc -> ?env:env -> int32 -> imm_expression -> imm_expression -> comp_expression
   val if_ : ?loc:loc -> ?env:env -> imm_expression -> anf_expression -> anf_expression -> comp_expression

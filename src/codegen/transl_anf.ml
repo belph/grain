@@ -202,6 +202,8 @@ let rec compile_comp env c =
     MPrim2(p2, compile_imm env arg1, compile_imm env arg2)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
+  | CConstruct(tidx, vidx, elts) ->
+    MAllocate(MConstruct(tidx, vidx, (List.map (compile_imm env)) elts))
   | CString(s) ->
     MAllocate(MString s)
   | CGetTupleItem(idx, tup) ->

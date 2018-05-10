@@ -17,6 +17,8 @@ depends: [
   "jbuilder" {build & >= "1.0+beta20" }
   "ppx_deriving"
   "ppx_sexp_conv"
+  "ppx_deriving_yojson"
+  "yojson"
   "sexplib"
   "dypgen"
   "ounit" { >= "2.0.0" }

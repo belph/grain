@@ -577,10 +577,15 @@ let allocate_tuple env elts =
   ]
 
 
+let allocate_constructed env tidx vidx data =
+  allocate_tuple env ((MImmConst(MConstI32 tidx))::(MImmConst(MConstI32 vidx))::data)
+
+
 let compile_allocation env alloc_type =
   match alloc_type with
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
+  | MConstruct(tidx, vidx, elts) -> allocate_constructed env tidx vidx elts
   | MString(str) -> allocate_string env str
 
 

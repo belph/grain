@@ -30,6 +30,7 @@ module Comp = struct
   let prim1 ?loc ?env p1 a = mk ?loc ?env (CPrim1(p1, a))
   let prim2 ?loc ?env p2 a1 a2 = mk ?loc ?env (CPrim2(p2, a1, a2))
   let tuple ?loc ?env elts = mk ?loc ?env (CTuple elts)
+  let construct ?loc ?env tidx vidx elts = mk ?loc ?env (CConstruct(tidx, vidx, elts))
   let tuple_get ?loc ?env tup idx = mk ?loc ?env (CGetTupleItem(tup, idx))
   let tuple_set ?loc ?env tup idx value = mk ?loc ?env (CSetTupleItem(tup, idx, value))
   let if_ ?loc ?env cond tru fals = mk ?loc ?env (CIf(cond, tru, fals))

@@ -56,6 +56,7 @@ and comp_expression_desc =
   | CPrim1 of prim1 * imm_expression
   | CPrim2 of prim2 * imm_expression * imm_expression
   | CTuple of imm_expression list
+  | CConstruct of int32 * int32 * imm_expression list (* type_idx, variant_idx, data *)
   | CGetTupleItem of int32 * imm_expression
   | CSetTupleItem of int32 * imm_expression * imm_expression
   | CIf of imm_expression * anf_expression * anf_expression

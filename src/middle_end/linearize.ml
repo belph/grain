@@ -19,6 +19,7 @@ let gensym = Ident.create
 let value_imports = ref []
 (* At the linearization phase, we lift all imports *)
 let symbol_table = ref (Ident.empty : (Ident.t Ident.tbl) Ident.tbl)
+let data_count = ref 0
 
 let lookup_symbol mod_ name =
   begin
@@ -165,7 +166,15 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let exp_ans, exp_setup = transl_imm exp in
     let ans, setup = MatchCompiler.compile_result (Matchcomp.convert_match_branches branches) transl_anf_expression exp_ans in
     (Imm.id ~loc ~env tmp), (exp_setup @ (List.map (fun (n, e) -> BLet(n, e)) setup)) @ [(BLet(tmp, ans))]
-  | TExpConstruct _ -> failwith "NYI: transl_imm: Construct"
+  | TExpConstruct(cname, desc, args) ->
+    failwith "NYI: TExpConstruct imm (should be impossible)"
+    (*let tmp = gensym "construct" in
+    let (new_args, new_setup) = List.split (List.map transl_imm args) in
+    let tag_int = compile_constructor_tag desc.cstr_tag in
+    (Imm.id ~loc ~env tmp),
+    (List.concat new_setup) @ [
+      BLet(tmp, Comp.construct ~loc ~env Int32.zero (Int32.of_int tag_int) new_args)
+    ]*)
 
 
 and bind_patts ?toplevel:(toplevel=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
@@ -327,21 +336,21 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | TTopData(decl) ->
     let open Types in
     let typath = Path.PIdent (decl.data_id) in
+    let tidx = Int32.of_int (!data_count) in
+    data_count := !data_count + 1;
     let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
     begin match descrs with
       | [] -> failwith "Impossible: TTopData TDataAbstract"
       | descrs ->
         let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+          let compiled_tag = Int32.of_int (compile_constructor_tag cstr_tag) in
           let rhs = match cstr_tag with
             | CstrConstant _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
-              Comp.tuple ~loc ~env [Imm.const ~loc ~env (Const_int compiled_tag)]
+              Comp.construct ~loc ~env tidx compiled_tag []
             | CstrBlock _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
               let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
               let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-              let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
-              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
+              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.construct ~loc ~env tidx compiled_tag arg_ids))
             | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
           BLetGlobal(Nonrecursive, [cd_id, rhs]) in
         Some(List.map bind_constructor descrs), []
@@ -352,6 +361,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | _ -> None, []
 
 let transl_anf_module ({statements; body; env; signature} : typed_program) : anf_program =
+  data_count := 0;
   value_imports := [];
   symbol_table := Ident.empty;
   let top_binds, imports = List.fold_right (fun cur (acc_bind, acc_imp) ->
